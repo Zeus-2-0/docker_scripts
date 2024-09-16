@@ -23,3 +23,4 @@ networks:
   internal-network:
     driver: bridge
     name: zeus-net
+    external: true
