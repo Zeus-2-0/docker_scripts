@@ -1,4 +1,3 @@
-version: "3"
 services:
   kafka-kraft:
     image: bitnami/kafka
@@ -6,7 +5,7 @@ services:
     ports:
       - 9092:9092
     networks:
-      - zeus-net
+      - internal-network
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
@@ -21,5 +20,6 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
     restart: always
 networks:
-  zeus-net:
+  internal-network:
     driver: bridge
+    name: zeus-net
