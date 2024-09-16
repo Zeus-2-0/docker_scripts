@@ -5,6 +5,8 @@ services:
     container_name: kafka
     ports:
       - 9092:9092
+    networks:
+      - zeus-net
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
