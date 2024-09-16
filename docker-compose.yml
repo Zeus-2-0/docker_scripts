@@ -1,0 +1,165 @@
+version: '3.8'
+services:
+  reference-data-service:
+    image: zeusprogetto/reference-data-service:latest
+    container_name: reference-data-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/reference-data-service:/logs/local
+    ports:
+      - "8080:8080"
+    environment:
+      ## SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/zeusrefdatadb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  tp-service:
+    image: zeusprogetto/tp-service:latest
+    container_name: tp-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/tp-service:/logs/local
+    ports:
+      - "8081:8081"
+    environment:
+      ## SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/tpdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      URL_HOST_REF-DATA: http://reference-data-service:8080/api/v1/
+  file-storage-service:
+    image: zeusprogetto/file-storage-service:latest
+    container_name: file-storage-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/file-storage-service:/logs/local
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/filestoragedb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    depends_on:
+      - tp-service
+  transaction-orig-service:
+    image: zeusprogetto/transaction-orig-service:latest
+    container_name: transaction-orig-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/transaction-orig-service:/logs/local
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/transactionorigdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    depends_on:
+      - tp-service
+  file-mgmt-service:
+    image: zeusprogetto/file-mgmt-service:latest
+    container_name: file-mgmt-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/file-mgmt-service:/logs/local
+      - /Users/edi/files:/edi/files
+      - /Users/edi/files/archive:/edi/files/archive
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/filemgmtdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      EDI_FILE_LOCATION: /edi/files/*.edi
+      EDI_FILE_ARCHIVE-LOCATION: /edi/files/archive
+      URL_HOST_TRADING-PARTNER: http://tp-service:8081
+      URL_HOST_TRANSACTION-ORIG-SERVICE: http://transaction-orig-service:8085
+      URL_HOST_FILE-STORAGE-SERVICE: http://file-storage-service:8083
+  member-mgmt-service:
+    image: zeusprogetto/member-mgmt-service:latest
+    container_name: member-mgmt-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/member-mgmt-service:/logs/local
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/membermgmtdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  validation-service:
+    image: zeusprogetto/validation-service:latest
+    container_name: validation-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/validation-service:/logs/local
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/validationdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      URL_HOST_RULES: http://rule-service:8098/api/v1/zeus/rules/
+  transaction-manager:
+    image: zeusprogetto/transaction-manager:latest
+    container_name: transaction-manager
+    networks:
+      - zeus-net
+    volumes:
+        - /Users/logs/zeus/transaction-manager:/logs/local
+    ports:
+      - "8095:8095"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/transactionmanagerdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  data-transform-service:
+    image: zeusprogetto/data-transform-service:latest
+    container_name: data-transform-service
+    networks:
+        - zeus-net
+    volumes:
+        - /Users/logs/zeus/data-transform-service:/logs/local
+    ports:
+      - "8096:8096"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/datatransformdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      URL_HOST_REF-DATA: http://reference-data-service:8080/api/v1/ref-data/
+  transaction-storage-service:
+    image: zeusprogetto/transaction-storage-service:latest
+    container_name: transaction-storage-service
+    networks:
+      - zeus-net
+    volumes:
+        - /Users/logs/zeus/transaction-storage-service:/logs/local
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/transactionstoragedb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  rule-service:
+    image: zeusprogetto/rule-service:latest
+    container_name: rule-service
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/rule-service:/logs/local
+    ports:
+      - "8098:8098"
+    environment:
+      #SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/rulesdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+  account-processor:
+    image: zeusprogetto/account-processor:latest
+    container_name: account-processor
+    networks:
+      - zeus-net
+    volumes:
+      - /Users/logs/zeus/account-processor:/logs/local
+    ports:
+      - "8099:8099"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/accountprocessordb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      URL_HOST_REF-DATA: http://reference-data-service:8080/api/v1/ref-data/
+networks:
+  zeus-net:
+    name: zeus-net
+    driver: bridge

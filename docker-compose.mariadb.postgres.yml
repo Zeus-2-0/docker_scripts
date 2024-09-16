@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    restart: always
+    ports:
+      - "3307:3306"
+    networks:
+      - zeus-net
+    environment:
+      MARIADB_ROOT_PASSWORD: cognizant
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - zeus-net
+    environment:
+#      Default user is postgres
+      POSTGRES_PASSWORD: cognizant
+networks:
+  zeus-net:
+    name: zeus-net
+    driver: bridge
