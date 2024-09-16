@@ -1,8 +1,8 @@
 version: "3"
 services:
-  kafka:
+  kafka-kraft:
     image: bitnami/kafka
-    #container_name: kafka
+    container_name: kafka
     ports:
       - 9092:9092
     networks:
